@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
+const Jwt = require('@hapi/jwt');
 
 // album
 const AlbumValidator = require('./validator/album');
@@ -15,6 +16,12 @@ const { SongsService } = require('./services/postgres/SongsService');
 const UserValidator = require('./validator/user');
 const users = require('./api/user');
 const UserService = require('./services/postgres/UsersService');
+// authentications
+const authentications = require('./api/authentication');
+const AuthenticationsService = require('./services/postgres/AuthenticationService');
+const TokenManager = require('./tokenize/TokenManager');
+const AuthenticationsValidator = require('./validator/authentication');
+
 
 const ClientError = require('./exceptions/ClientError');
 
@@ -22,6 +29,7 @@ const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongsService();
   const userService = new UserService();
+  const authenticationsService = new AuthenticationsService();  
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -30,6 +38,28 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+  // registrasi plugin eksternal
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  server.auth.strategy('notesapp_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
   });
   await server.register([{
     plugin: albums,
@@ -50,6 +80,15 @@ const init = async () => {
     options: {
       service: userService,
       validator: UserValidator,
+    },
+  },
+  {
+    plugin: authentications,
+    options: {
+      authenticationsService,
+      userService,
+      tokenManager: TokenManager,
+      validator: AuthenticationsValidator,
     },
   },
   ]);
