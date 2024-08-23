@@ -9,22 +9,20 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-    pgm.createTable('collaborations',{
-        id : {
-            type: 'VARCHAR(50)',
-            primaryKey:true,
-        },
-        playlist_id : {
-            type: 'VARCHAR(50)',
-            notNull: true,
-          },
-        user_id : {
-            type : 'VARCHAR(50)',
-            notNull: true,
-        }
-    })
-
-    
+  pgm.createTable('collaborations', {
+    id: {
+      type: 'VARCHAR(50)',
+      primaryKey: true,
+    },
+    playlist_id: {
+      type: 'VARCHAR(50)',
+      notNull: true,
+    },
+    user_id: {
+      type: 'VARCHAR(50)',
+      notNull: true,
+    },
+  });
 };
 
 /**
@@ -33,5 +31,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-    pgm.dropTable('collaborations');
+  pgm.dropTable('collaborations');
 };

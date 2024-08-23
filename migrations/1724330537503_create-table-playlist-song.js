@@ -9,20 +9,20 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-    pgm.createTable('playlist_song',{
-        id : {
-            type:'VARCHAR(50)',
-            primaryKey:true,
-        },
-        playlist_id : {
-            type:'VARCHAR(50)',
-            notNull:true,
-        },
-        song_id : {
-            type:'VARCHAR(50)',
-            notNull:true,
-        }
-    })
+  pgm.createTable('playlist_song', {
+    id: {
+      type: 'VARCHAR(50)',
+      primaryKey: true,
+    },
+    playlist_id: {
+      type: 'VARCHAR(50)',
+      notNull: true,
+    },
+    song_id: {
+      type: 'VARCHAR(50)',
+      notNull: true,
+    },
+  });
 };
 
 /**
@@ -31,5 +31,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-    pgm.dropTable('playlist_song')
+  pgm.dropTable('playlist_song');
 };

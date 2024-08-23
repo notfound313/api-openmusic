@@ -21,7 +21,14 @@ const authentications = require('./api/authentication');
 const AuthenticationsService = require('./services/postgres/AuthenticationService');
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentication');
-
+// playlist
+const playlists = require('./api/playlist');
+const PlaylistService = require('./services/postgres/PlaylistService');
+const PlaylistValidator = require('./validator/playlist');
+// playlistsong
+const playlistsongs = require('./api/playlistsong');
+const PlaylistSongService = require('./services/postgres/PlaylistSongService');
+const PlaylistSongValidator = require('./validator/playlistsong');
 
 const ClientError = require('./exceptions/ClientError');
 
@@ -29,7 +36,9 @@ const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongsService();
   const userService = new UserService();
-  const authenticationsService = new AuthenticationsService();  
+  const authenticationsService = new AuthenticationsService();
+  const playlistService = new PlaylistService();
+  const playlistSongService = new PlaylistSongService();
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -46,7 +55,7 @@ const init = async () => {
     },
   ]);
 
-  server.auth.strategy('notesapp_jwt', 'jwt', {
+  server.auth.strategy('openmusicapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
       aud: false,
@@ -80,6 +89,21 @@ const init = async () => {
     options: {
       service: userService,
       validator: UserValidator,
+    },
+  },
+  {
+    plugin: playlistsongs,
+    options: {
+      service: playlistSongService,
+      validator: PlaylistSongValidator,
+    },
+  },
+
+  {
+    plugin: playlists,
+    options: {
+      service: playlistService,
+      validator: PlaylistValidator,
     },
   },
   {

@@ -1,9 +1,9 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const bcrypt = require('bcrypt');
-const AuthenticationError =  require('../../exceptions/AuthenticationError');
+const AuthenticationError = require('../../exceptions/AuthenticationError');
 
 class UsersService {
   constructor() {
@@ -76,9 +76,9 @@ class UsersService {
       text: 'SELECT id, password FROM users WHERE username = $1',
       values: [username],
     };
-    
+
     const result = await this._pool.query(query);
-    
+
     if (!result.rows.length) {
       throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
