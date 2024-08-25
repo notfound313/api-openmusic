@@ -13,27 +13,26 @@ class PlaylistSongHandler {
     const { songId } = request.payload;
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
-    await this._service.verifyPlaylistSongOwner(playlistId,credentialId)
+    await this._service.verifyPlaylistAccess(playlistId, credentialId);
     const playlistSongId = await this._service.addSongToPlaylist(playlistId, songId);
-   
+
     const response = h.response({
-        status: 'success',
-        message: 'Song berhasil ditambahkan ke playlist',
-        data: {
-            playlistSongId,
-        },
-      });
-    response.code(201);   
-   
-   
+      status: 'success',
+      message: 'Song berhasil ditambahkan ke playlist',
+      data: {
+        playlistSongId,
+      },
+    });
+    response.code(201);
+
     return response;
   }
 
   async getPlaylistSongsHandler(request, h) {
-    const { id:playlistId } = request.params;
+    const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
-    await this._service.verifyPlaylistSongOwner(playlistId,credentialId)
-    const  data  = await this._service.getSongsFromPlaylist(playlistId);
+    await this._service.verifyPlaylistAccess(playlistId, credentialId);
+    const data = await this._service.getSongsFromPlaylist(playlistId);
     const response = h.response({
       status: 'success',
       data,
@@ -43,10 +42,10 @@ class PlaylistSongHandler {
 
   async deletePlaylistSongHandler(request, h) {
     this._validator.validatePlaylistSongPayload(request.payload);
-    const {id: playlistId } = request.params;
+    const { id: playlistId } = request.params;
     const { songId } = request.payload;
     const { id: credentialId } = request.auth.credentials;
-    await this._service.verifyPlaylistSongOwner(playlistId,credentialId)
+    await this._service.verifyPlaylistAccess(playlistId, credentialId);
     await this._service.deleteSongFromPlaylist(playlistId, songId);
     const response = h.response({
       status: 'success',

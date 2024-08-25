@@ -89,6 +89,19 @@ class UsersService {
     }
     return id;
   }
+
+  async validateUserId(id) {
+    const query = {
+      text: 'SELECT id FROM users WHERE id = $1',
+      values: [id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('User ID tidak valid');
+    }
+  }
 }
 
 module.exports = UsersService;

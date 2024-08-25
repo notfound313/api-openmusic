@@ -27,12 +27,20 @@ class PlaylistService {
 
   async getAllPlaylist(credentialId) {
     const query = {
-      text: 'SELECT * FROM playlist WHERE user_id=$1',
+      text: `SELECT DISTINCT playlist.id , playlist.name, users.username
+      FROM playlist 
+      LEFT JOIN collaborations ON collaborations.playlist_id = playlist.id
+      LEFT JOIN users ON users.id = playlist.user_id
+      WHERE playlist.user_id = $1 OR collaborations.user_id = $1
+      OR users.id = $1
+      `,
       values: [credentialId],
     };
+   
     const result = await this._pool.query(query);
 
-    return result.rows.map(mapDBPlaylist);
+
+    return result.rows;
   }
 
   async getPlaylistById(id) {
@@ -60,20 +68,20 @@ class PlaylistService {
   }
 
   async verifyPlaylistOwner(playlistId, userId) {
-      const query = {
-        text: 'SELECT * FROM playlist WHERE id = $1',
-        values: [playlistId],
-      };
-      const result = await this._pool.query(query);
-      if (!result.rows.length) {
-        throw new NotFoundError('Playlist tidak ditemukan');
-      }
-      const playlist = result.rows[0];
-      if (playlist.user_id !== userId) {
-        throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
-      }
+    const query = {
+      text: 'SELECT * FROM playlist WHERE id = $1',
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
     }
-  
+    const playlist = result.rows[0];
+    if (playlist.user_id !== userId) {
+      throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+  }
 }
 
 module.exports = PlaylistService;
