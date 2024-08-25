@@ -1,7 +1,8 @@
 const autoBind = require('auto-bind');
 
 class PlaylistSongHandler {
-  constructor(service, validator) {
+  constructor(service, validator, activities) {
+    this._activities = activities;
     this._service = service;
     this._validator = validator;
 
@@ -15,6 +16,7 @@ class PlaylistSongHandler {
     const { id: credentialId } = request.auth.credentials;
     await this._service.verifyPlaylistAccess(playlistId, credentialId);
     const playlistSongId = await this._service.addSongToPlaylist(playlistId, songId);
+    await this._activities.addPlaylistActivity(playlistId, songId, credentialId, 'add');
 
     const response = h.response({
       status: 'success',
@@ -47,6 +49,8 @@ class PlaylistSongHandler {
     const { id: credentialId } = request.auth.credentials;
     await this._service.verifyPlaylistAccess(playlistId, credentialId);
     await this._service.deleteSongFromPlaylist(playlistId, songId);
+    await this._activities.addPlaylistActivity(playlistId, songId, credentialId, 'delete');
+
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil dihapus dari playlist',

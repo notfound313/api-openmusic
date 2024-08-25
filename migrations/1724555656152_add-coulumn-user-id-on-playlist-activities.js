@@ -9,10 +9,16 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.addConstraint('playlist_activity', 'fk_playlist_activity.song_id_song.song_id', {
+  pgm.addColumn('playlist_activity', {
+    user_id: {
+      type: 'VARCHAR(50)',
+    },
+  });
+
+  pgm.addConstraint('playlist_activity', 'fk_playlist_activity.user_id_usres.id', {
     foreignKeys: {
-      columns: 'song_id',
-      references: 'song(song_id)',
+      columns: 'user_id',
+      references: 'users(id)',
     },
   });
 };
@@ -23,5 +29,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropConstraint('playlist_activity', 'fk_playlist_activity.song_id_song.song_id');
+  pgm.dropColumn('playlist_activity', 'user_id');
 };

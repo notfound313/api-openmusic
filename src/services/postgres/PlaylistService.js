@@ -36,9 +36,8 @@ class PlaylistService {
       `,
       values: [credentialId],
     };
-   
-    const result = await this._pool.query(query);
 
+    const result = await this._pool.query(query);
 
     return result.rows;
   }
