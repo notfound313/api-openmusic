@@ -1,6 +1,6 @@
-const routes = (handler)=>[
+const routes = (handler) => [
   {
-    path: '/export/playlists/{playlistId}',
+    path: '/export/playlists/{id}',
     method: 'POST',
     handler: handler.postExportPlaylistHandler,
     options: {
@@ -8,3 +8,4 @@ const routes = (handler)=>[
     },
   },
 ];
+module.exports = routes;

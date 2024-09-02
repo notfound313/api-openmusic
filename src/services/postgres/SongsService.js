@@ -5,8 +5,9 @@ const { mapDBtoSong } = require('../../utils');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class SongsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   // add song
@@ -26,49 +27,68 @@ class SongsService {
     if (!result.rows.length || !result.rows[0].song_id) {
       throw new InvariantError('Gagal menambahkan lagu');
     }
+
+    await this._cacheService.delete('song');
     return result.rows[0].song_id;
   }
 
   // get song
   async getSongs({ title, performer }) {
-    let textQuery;
-    if (title && performer) {
-      textQuery = {
-        text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1 AND performer ILIKE $2',
-        values: [`%${title}%`, `%${performer}%`],
-      };
-    } else if (title) {
-      textQuery = {
-        text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1',
-        values: [`%${title}%`],
-      };
-    } else if (performer) {
-      textQuery = {
-        text: 'SELECT song_id, title, performer FROM song WHERE performer ILIKE $1',
-        values: [`%${performer}%`],
-      };
-    } else {
-      textQuery = {
-        text: 'SELECT song_id, title, performer FROM song',
-      };
-    }
-    const result = await this._pool.query(textQuery);
+    try {
+      const result = await this._cacheService.get('song');
+      return JSON.parse(result);
+    } catch (error) {
+      let textQuery;
+      if (title && performer) {
+        textQuery = {
+          text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1 AND performer ILIKE $2',
+          values: [`%${title}%`, `%${performer}%`],
+        };
+      } else if (title) {
+        textQuery = {
+          text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1',
+          values: [`%${title}%`],
+        };
+      } else if (performer) {
+        textQuery = {
+          text: 'SELECT song_id, title, performer FROM song WHERE performer ILIKE $1',
+          values: [`%${performer}%`],
+        };
+      } else {
+        textQuery = {
+          text: 'SELECT song_id, title, performer FROM song',
+        };
+      }
+      const result = await this._pool.query(textQuery);
 
-    return result.rows.map(mapDBtoSong);
+      const mappedResult = result.rows.map(mapDBtoSong);
+      await this._cacheService.set('song', JSON.stringify(mappedResult));
+
+      return mappedResult;
+    }
   }
 
   // get song by id
   async getSongById(id) {
-    const query = {
-      text: 'SELECT * FROM song WHERE song_id = $1',
-      values: [id],
-    };
-    const result = await this._pool.query(query);
+    try {
+      const result = await this._cacheService.get(`song:${id}`);
+      return JSON.parse(result);
+    } catch (error) {
+      const query = {
+        text: 'SELECT * FROM song WHERE song_id = $1',
+        values: [id],
+      };
+      const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      throw new NotFoundError('Gagal mendapatkan lagu, id tidak ditemukan');
+      if (!result.rows.length) {
+        throw new NotFoundError('Gagal mendapatkan lagu, id tidak ditemukan');
+      }
+
+      const mappedResult = result.rows.map(mapDBtoSong)[0];
+      await this._cacheService.set(`song:${id}`, JSON.stringify(mappedResult));
+
+      return mappedResult;
     }
-    return result.rows.map(mapDBtoSong)[0];
   }
 
   // edit song
@@ -86,6 +106,9 @@ class SongsService {
     if (!result.rows.length) {
       throw new NotFoundError('Gagal memeperbarui lagu, id tidak ditemukan');
     }
+
+    await this._cacheService.delete(`song:${id}`);
+    
   }
 
   // delete song
@@ -98,6 +121,9 @@ class SongsService {
     if (!result.rows.length) {
       throw new NotFoundError('Gagal menghapus lagu, id tidak ditemukan');
     }
+
+    await this._cacheService.delete(`song:${id}`);
+   
   }
 }
 

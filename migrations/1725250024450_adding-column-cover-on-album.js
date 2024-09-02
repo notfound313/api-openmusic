@@ -9,12 +9,12 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-    pgm.addColumn('album', {
-        cover: {
-            type: 'TEXT',
-            notNull: false,
-        }
-    })
+  pgm.addColumn('album', {
+    cover: {
+      type: 'TEXT',
+      notNull: false,
+    },
+  });
 };
 
 /**
@@ -23,5 +23,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-    pgm.dropColumn('album', 'cover');
+  pgm.dropColumn('album', 'cover');
 };
