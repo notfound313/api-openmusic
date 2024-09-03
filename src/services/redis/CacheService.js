@@ -15,40 +15,19 @@ class CacheService {
   }
 
   async set(key, value, expiration = 1800) {
-    try {
-      await this._client.set(key, JSON.stringify(value), {
-        EX: expiration,
-      });
-    } catch (error) {
-      console.error('Error setting cache:', error);
-    }
+    await this._client.set(key, value, {
+      EX: expiration,
+    });
   }
 
   async get(key) {
-    try {
-      const value = await this._client.get(key);
-      if (value) {
-        const parsedValue = JSON.parse(value);
-        return {
-          data: parsedValue,
-          headers: {
-            'X-Data-Source': 'cache',
-          },
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error getting cache:', error);
-      return null;
-    }
+    const value = await this._client.get(key);
+    if (value === null) throw new Error('Cache tidak ditemukan');
+    return value;
   }
 
   async delete(key) {
-    try {
-      await this._client.del(key);
-    } catch (error) {
-      console.error('Error deleting cache:', error);
-    }
+    await this._client.del(key);
   }
 }
 module.exports = CacheService;

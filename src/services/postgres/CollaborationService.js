@@ -21,8 +21,8 @@ class CollaborationsService {
     if (!result.rows.length) {
       throw new InvariantError('Kolaborasi gagal ditambahkan');
     }
+    await this._cacheService.delete(`playlists:${userId}`);
 
-    await this._cacheService.delete(`playlist:${userId}`);
     return result.rows[0].id;
   }
 
@@ -38,7 +38,7 @@ class CollaborationsService {
       throw new InvariantError('Kolaborasi gagal dihapus');
     }
 
-    await this._cacheService.delete(`playlist:${userId}`);
+    await this._cacheService.delete(`playlists:${userId}`);
   }
 
   async verifyCollaborator(playlistId, userId) {

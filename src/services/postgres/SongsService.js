@@ -34,38 +34,32 @@ class SongsService {
 
   // get song
   async getSongs({ title, performer }) {
-    try {
-      const result = await this._cacheService.get('song');
-      return JSON.parse(result);
-    } catch (error) {
-      let textQuery;
-      if (title && performer) {
-        textQuery = {
-          text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1 AND performer ILIKE $2',
-          values: [`%${title}%`, `%${performer}%`],
-        };
-      } else if (title) {
-        textQuery = {
-          text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1',
-          values: [`%${title}%`],
-        };
-      } else if (performer) {
-        textQuery = {
-          text: 'SELECT song_id, title, performer FROM song WHERE performer ILIKE $1',
-          values: [`%${performer}%`],
-        };
-      } else {
-        textQuery = {
-          text: 'SELECT song_id, title, performer FROM song',
-        };
-      }
-      const result = await this._pool.query(textQuery);
-
-      const mappedResult = result.rows.map(mapDBtoSong);
-      await this._cacheService.set('song', JSON.stringify(mappedResult));
-
-      return mappedResult;
+    let textQuery;
+    if (title && performer) {
+      textQuery = {
+        text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1 AND performer ILIKE $2',
+        values: [`%${title}%`, `%${performer}%`],
+      };
+    } else if (title) {
+      textQuery = {
+        text: 'SELECT song_id, title, performer FROM song WHERE title ILIKE $1',
+        values: [`%${title}%`],
+      };
+    } else if (performer) {
+      textQuery = {
+        text: 'SELECT song_id, title, performer FROM song WHERE performer ILIKE $1',
+        values: [`%${performer}%`],
+      };
+    } else {
+      textQuery = {
+        text: 'SELECT song_id, title, performer FROM song',
+      };
     }
+    const result = await this._pool.query(textQuery);
+
+    const mappedResult = result.rows.map(mapDBtoSong);
+
+    return mappedResult;
   }
 
   // get song by id
@@ -108,7 +102,6 @@ class SongsService {
     }
 
     await this._cacheService.delete(`song:${id}`);
-    
   }
 
   // delete song
@@ -123,7 +116,6 @@ class SongsService {
     }
 
     await this._cacheService.delete(`song:${id}`);
-   
   }
 }
 

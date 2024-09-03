@@ -28,6 +28,7 @@ class PlaylistSongService {
     }
 
     await this._cacheService.delete(`songs:${playlistId}`);
+
     return result.rows[0].id;
   }
 

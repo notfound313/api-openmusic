@@ -39,7 +39,6 @@ class AlbumService {
     } catch (error) {
       const result = await this._pool.query('SELECT * FROM album');
       const mappedResult = result.rows.map(mapDBtoAlbum);
-
       await this._cacheService.set('albums', JSON.stringify(mappedResult));
       return mappedResult;
     }
@@ -133,6 +132,19 @@ class AlbumService {
 
       await this._cacheService.set(`albumSong:${id}`, JSON.stringify(albumWithSongs));
       return albumWithSongs;
+    }
+  }
+
+  async verifyAlbum(album_id) {
+    const query = {
+      text: 'SELECT * FROM album WHERE album_id = $1',
+      values: [album_id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Album tidak ditemukan');
     }
   }
 
